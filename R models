@@ -1,0 +1,72 @@
+
+# Spherical K-means on Wine Data
+
+setwd("/users/johnforeman/datasmartfiles")
+winedata <- read.csv("WineKMC.csv")
+winedata[is.na(winedata)] <- 0
+install.packages("skmeans, dependencies = TRUE)
+library(skmeans)
+winedata.transposed <- t(winedata[,8:107])
+winedata.clusters <- skmeans(winedata.transposed, 5, method = "genetic")
+winedata.clustercounts <- t(aggregate(winedata.transposed, by = list(winedata.clusters$cluster), sum)[,2:33]
+
+winedata.desc.plus.counts <- cbind(winedata[,1:7], winedata.clustercounts)
+winedata.desc.plus.scounts[order(-winedata.desc.plus.counts[,8]),]
+
+# Building AI model on Pregnancy Data
+
+PregnancyData <- read.csv("Pregnancy.csv")
+PregnancyData.Test <- read.csv("Pregnancy_Test.csv")
+PregnancyData$PREGNANT <- factor(PregnancyData$PREGNANT)
+PregnancyData.Test$PREGNANT <- factor(PregnancyData.Test$PREGNANT)
+install.packages("randomForest", dependencies = TRUE)
+library(randomForest)
+library(ROCR)
+Pregnancy.lm <- glm(PREGNANT ~., data = PregnancyData, family = binomial("logit"))
+summary(Pregnancy.lm)
+Pregnancy.rf <- randomForest(PREGNANT ~., data = PregnancyData, importance = TRUE)
+varImpPlot(Pregnancy.rf, type = 2) # type 2 = Node Impurity
+PregnancyData.Test.lm.Preds <- predict(Pregnancy.lm, PregnancyData.Test, type = "response")
+PregnancyData.Test.rf.Preds <- predict(Pregnancy.rf, PregnancyData.Test, type = "prob")
+pred.lm <- prediction(PregnancyData.Test.lm.Preds, PregnancyData.Test$PREGNANT)
+pred.rf <- prediction(PregnanctData.Test.rf.Preds[,2], PregnancyData.Test$PREGNANT)
+perf.lm <- performance(pred.lm, "tpr", "fpr")
+perf.rf <- performance(pred.rf, "tpr", "fpr")
+plot(perf.lm, xlim = c(0,1), ylim = c(0,1))
+plot(perf.rf, xlim = c(0,1), ylim = c(0,1), lty = 2, add = TRUE)
+
+# Forecasting in R
+
+sword <- read.csv("SwordDemand.csv")
+sword.ts <- ts(sword, frequency = 12, start = c(2010,1))
+install.packages("forecast", dependencies = TRUE)
+library(forecast)
+sword.forecast <- forecast(sword.ts)
+plot(sword.forecast)
+
+# Looking at Outlier Detection
+# Pregnancy Data
+
+PregnancyDuration <- read.csv("PregnancyDuration.csv")
+summary(PregnancyDuration)
+PregnancyDuration.IQR <- IQR(PregnancyDuration$GestationDays)
+LowerInnerFence <- 260 - 1.5 * PregnancyDuration.IQR
+UpperInnerFence <- 272 + 1.5 * PregnancyDuration.IQR
+which(PregnancyDuration$GestationDays > UpperInnerFence)
+PregnancyDuration$GestationDays[which(PregnancyDuration$GestationDays > UpperInnerFence)]
+boxplot(PregnancyDuration$GestationDays)
+boxplot(PregnancyDuration$GestationDays, range = 3)
+boxplot(PregnancyDuration$GestationDays, range = 3)$stats
+boxplot(PregnancyDuration$GestationDays , range = 3)$out
+
+# Call Center
+
+CallCenter <- read.csv("CallCenter.csv")
+summary(CallCenter)
+CallCenter.scale <- scale(CallCenter[2:11])
+summaray(CallCenter.scale)
+install.packages("DMwR, dependencies = TRUE)
+library(DMwR)
+CallCenter.lof <- lofactor(CallCenter.scale, 5)
+which(CallCenter.lof) > 1.5
+CallCenter[which(CallCenter.lof) > 1.5,]
